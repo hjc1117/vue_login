@@ -12,42 +12,103 @@
     <!-- 主题 -->
     <el-container>
       <!-- 左侧边栏 -->
-      <el-aside width="200px">
-        <el-menu text-color="#fff" active-text-color="#ffd04b">
+      <el-aside :width="isshow ? '64px' : '200px'">
+        <!-- 侧边栏展开合并 -->
+        <div class="toggle" @click="toggle">
+          <i
+            :class="[isshow ? 'el-icon-d-arrow-right' : 'el-icon-d-arrow-left']"
+          ></i>
+        </div>
+        <el-menu
+          text-color="#fff"
+          active-text-color="rgb(54, 155, 255)"
+          unique-opened
+          :collapse="isshow"
+          :collapse-transition="false"
+          router
+          :default-active="actpath"
+        >
           <!-- 一级菜单 -->
-          <el-submenu index="1">
+          <el-submenu
+            :index="'/' + item.path"
+            v-for="item in menulist"
+            :key="item.id"
+            ><!--index只接收字符串，所以要将item.id转化成字符串-->
             <!-- 一级菜单模板 -->
             <template slot="title">
               <!-- 图标 -->
-              <i class="el-icon-location"></i>
+              <i :class="icon_[item.id]"></i>
               <!-- 文本 -->
-              <span>导航一</span>
+              <span>{{ item.authName }}</span>
             </template>
 
             <!-- 二级菜单 -->
-            <el-menu-item index="1-4-1"
+            <!--router 是否使用 vue-router 的模式，启用该模式会在激活导航时以 index 作为 path 进行路由跳转 -->
+            <el-menu-item
+              :index="'/' + sitem.path"
+              v-for="sitem in item.children"
+              :key="sitem.id"
+              @click="savesession('/' + sitem.path)"
               ><template slot="title">
                 <!-- 图标 -->
-                <i class="el-icon-location"></i>
+                <i class="el-icon-menu"></i>
                 <!-- 文本 -->
-                <span>导航2</span>
+                <span>{{ sitem.authName }}</span>
               </template></el-menu-item
             >
           </el-submenu>
         </el-menu>
       </el-aside>
       <!-- 右侧 -->
-      <el-main>Main</el-main>
+      <el-main>
+        <router-view></router-view>
+      </el-main>
     </el-container>
   </el-container>
 </template>
 
 <script>
 export default {
+  data() {
+    return {
+      menulist: [],
+      icon_: {
+        "125": "el-icon-s-custom",
+        "103": "el-icon-key",
+        "101": "el-icon-shopping-cart-2",
+        "102": "el-icon-paperclip",
+        "145": "el-icon-toilet-paper",
+      },
+      isshow: false,
+      actpath: "",
+    };
+  },
+  created() {
+    //钩子函数  创造实例后调用
+    this.getlist();
+    this.actpath = window.sessionStorage.getItem("v");
+  },
   methods: {
     tuichu() {
       window.sessionStorage.clear(); //清除token
       this.$router.push("/login"); //重定向到登录页面
+    },
+    async getlist() {
+      //获取所有菜单
+      const { data: res } = await this.$http.get("menus");
+      if (res.meta.status !== 200) {
+        return this.$message.error(res.meta.msg);
+      } else {
+        this.menulist = res.data;
+      }
+      // console.log(res);
+    },
+    toggle() {
+      this.isshow = !this.isshow;
+    },
+    savesession(v) {
+      window.sessionStorage.setItem("v", v);
+      this.actpath = v;
     },
   },
 };
@@ -74,14 +135,14 @@ export default {
 .font_ {
   font-size: 26px;
   position: relative;
-  color: rgb(114, 110, 110);
+  color: rgb(224, 224, 224);
   left: 10px;
 }
 .el-container {
-  height: 100%;
+  height: 99.99%;
 }
 .el-header {
-  background-color: skyblue;
+  background-color: rgb(38, 51, 56);
   height: 120px !important;
   .el-button {
     float: right;
@@ -90,11 +151,35 @@ export default {
 }
 
 .el-main {
-  background-color: rgb(156, 152, 152);
+  background-color: 255, 255, 255;
 }
 .el-aside,
 .el-menu,
 .el-menu li {
   background-color: rgb(9, 91, 124) !important;
+}
+.el-menu {
+  width: 100%;
+  border-right: none;
+}
+.el-menu--collapse {
+  border-right: none !important;
+}
+.el-aside {
+  overflow-x: hidden !important;
+  transition: all 0.2s;
+}
+.toggle {
+  background-color: rgb(36, 44, 47);
+  height: 25px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  .el-icon-d-arrow-left {
+    color: rgb(0, 255, 34);
+  }
+  .el-icon-d-arrow-right {
+    color: rgb(37, 235, 235);
+  }
 }
 </style>
