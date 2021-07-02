@@ -424,7 +424,7 @@ export default {
     },
     //点击确定发送分配角色数据
     async saveroleinfo() {
-      if (!selectid) {
+      if (!this.selectid) {
         return this.$message.error("选择要分配的角色");
       }
       const { data: res } = await this.$http.put(
@@ -439,7 +439,7 @@ export default {
       }
       this.$message.success("更新角色信息成功");
       this.getuserList();
-      setRoleDialogVisible = false;
+      this.setRoleDialogVisible = false;
       this.userinfo = {};
       this.selectid = "";
     },
