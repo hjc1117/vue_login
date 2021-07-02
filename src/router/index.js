@@ -7,6 +7,7 @@ import Welcome from '../components/welcome.vue'
 import User from '../components/user/user.vue'
 import Rights from '../components/power/rights.vue'
 import Juese from '../components/power/juese.vue'
+import Cate from '../components/shoplist/cate.vue'
 Vue.use(VueRouter)
 const routes = [{
     // 注册
@@ -31,6 +32,9 @@ const routes = [{
     }, {
         path: "/roles",
         component: Juese
+    }, {
+        path: "/categories",
+        component: Cate
     }, ]
 }, ]
 

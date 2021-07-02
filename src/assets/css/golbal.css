@@ -20,3 +20,9 @@ body,
 .el-pagination {
     margin-top: 15px;
 }
+
+.el-popper,
+.el-cascader__dropdown {
+    height: 400px;
+    overflow: scroll;
+}
