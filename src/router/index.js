@@ -8,11 +8,12 @@ import User from '../components/user/user.vue'
 import Rights from '../components/power/rights.vue'
 import Juese from '../components/power/juese.vue'
 import Cate from '../components/shoplist/cate.vue'
+import Params from '../components/shoplist/params.vue'
 Vue.use(VueRouter)
 const routes = [{
     // 注册
     path: '/',
-    redirect: '/login'
+    redirect: '/login' //重定向
 }, {
     path: "/login",
     component: Login
@@ -20,22 +21,14 @@ const routes = [{
     path: "/home",
     component: Home,
     redirect: '/welcome',
-    children: [{
-        path: "/welcome",
-        component: Welcome
-    }, {
-        path: "/users",
-        component: User
-    }, {
-        path: "/rights",
-        component: Rights
-    }, {
-        path: "/roles",
-        component: Juese
-    }, {
-        path: "/categories",
-        component: Cate
-    }, ]
+    children: [
+        { path: "/welcome", component: Welcome },
+        { path: "/users", component: User },
+        { path: "/rights", component: Rights },
+        { path: "/roles", component: Juese },
+        { path: "/categories", component: Cate },
+        { path: "/params", component: Params },
+    ]
 }, ]
 
 const router = new VueRouter({
