@@ -46,12 +46,20 @@
           >
           <el-tag type="danger" size="mini" v-else>三级</el-tag>
         </template>
-        <!-- 操作模板 -->
+        <!-- 操作模板列 -->
         <template v-slot:caozuo="scope">
-          <el-button type="success" size="mini" icon="el-icon-edit"
+          <el-button
+            type="success"
+            size="mini"
+            icon="el-icon-edit"
+            @click="caozuoshop(scope.row)"
             >操作</el-button
           >
-          <el-button type="danger" size="mini" icon="el-icon-delete"
+          <el-button
+            type="danger"
+            size="mini"
+            icon="el-icon-delete"
+            @click="deleteShop(scope.row)"
             >删除</el-button
           >
         </template>
@@ -86,7 +94,6 @@
         <el-form-item label="分类名称" prop="cat_name">
           <el-input v-model="addform.cat_name"></el-input>
         </el-form-item>
-
         <el-form-item label="父级分类">
           <!-- options用来指定数据源 -->
           <!-- props用来指定配置对象 -->
@@ -99,10 +106,33 @@
           ></el-cascader>
         </el-form-item>
       </el-form>
-
       <span slot="footer" class="dialog-footer">
         <el-button @click="addCurrentdialogVisible = false">取 消</el-button>
         <el-button type="primary" @click="addCate">确 定</el-button>
+      </span>
+    </el-dialog>
+    <!-- 操作分类弹出框 -->
+    <el-dialog
+      title="添加分类"
+      :visible.sync="changeCurrentdialogVisible"
+      width="50%"
+      @close="changeOnClose"
+    >
+      <!-- 添加分类form表单 -->
+      <el-form
+        :model="changeform"
+        :rules="changeformRules"
+        ref="changeformref"
+        label-width="100px"
+      >
+        <el-form-item label="分类名称" prop="change_name">
+          <el-input v-model="changeform.cat_name"></el-input>
+        </el-form-item>
+      </el-form>
+
+      <span slot="footer" class="dialog-footer">
+        <el-button @click="changeCurrentdialogVisible = false">取 消</el-button>
+        <el-button type="primary" @click="changeCate">确 定</el-button>
       </span>
     </el-dialog>
   </div>
@@ -184,6 +214,12 @@ export default {
       //选中的父级分类的id数组
       slelctedkeys: [],
       checkStrictly: true,
+      // 获取修改列表
+      changeform: {},
+      changeformRules: {
+        change_name: [{ trigger: "blur" }],
+      },
+      changeCurrentdialogVisible: false,
     };
   },
   created() {
@@ -269,6 +305,67 @@ export default {
       this.slelctedkeys = [];
       this.addform.cat_level = 0;
       this.addform.cat_pid = 0;
+    },
+    //获取操作数据
+    async caozuoshop(scope) {
+      const { data: res } = await this.$http.get(`categories/${scope.cat_id}`);
+
+      // console.log(scope.cat_id);
+      // console.log(res);
+      if (res.meta.status !== 200) {
+        return this.$message.error("获取父级分类失败");
+      }
+      this.changeform = res.data;
+      this.changeCurrentdialogVisible = true;
+    },
+    async deleteShop(scope_) {
+      const confirm_ = await this.$confirm(
+        "此操作将永久删除该角色, 是否继续?",
+        "提示",
+        {
+          confirmButtonText: "确定",
+          cancelButtonText: "取消",
+          type: "warning",
+        }
+      ).catch((err) => err);
+      //   console.log(confirm_);
+      //点确认返回confirm 点取消返回cancle
+      if (confirm_ !== "confirm") {
+        return this.$message.info("取消删除");
+      }
+      const { data: res } = await this.$http.delete(
+        `categories/${scope_.cat_id}`
+      );
+      console.log(scope_.cat_id);
+      if (res.meta.status !== 200) {
+        return this.$message.error("删除失败");
+      }
+      this.$message.success("删除成功");
+      this.getcatelist();
+    },
+    changeOnClose() {
+      this.$refs.changeformref.resetFields();
+      this.slelctedkeys = [];
+      this.changeform.cat_level = 0;
+      this.changeform.cat_pid = 0;
+    },
+    changeCate() {
+      this.$refs.changeformref.validate(async (v) => {
+        if (!v) {
+          return;
+        } else {
+          const { data: res } = await this.$http.put(
+            `categories/${this.changeform.cat_id}`,
+            {
+              cat_name: this.changeform.cat_name,
+            }
+          );
+          console.log(res);
+          this.changeCurrentdialogVisible = false;
+          this.getcatelist();
+          this.$message.success("修改成功");
+        }
+      });
     },
   },
 };
