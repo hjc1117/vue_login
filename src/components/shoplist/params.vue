@@ -48,7 +48,38 @@
           <!-- 动态参数表格 -->
           <el-table :data="manylist" border stripe>
             <!-- 展开小箭头 -->
-            <el-table-column type="expand"> </el-table-column>
+            <el-table-column type="expand">
+              <template v-slot="scope">
+                <el-tag
+                  v-for="(item, i) in scope.row.attr_vals"
+                  :key="i"
+                  closable
+                  @close="tagClose(i, scope.row)"
+                >
+                  {{ item }}
+                </el-tag>
+                <!-- 结尾添加区 -->
+                <!-- 输入的文本框 -->
+                <el-input
+                  class="input-new-tag"
+                  v-if="scope.row.inputVisible"
+                  v-model="scope.row.inputValue"
+                  ref="saveTagInput"
+                  size="small"
+                  @keyup.enter.native="handleInputConfirm(scope.row)"
+                  @blur="handleInputConfirm(scope.row)"
+                >
+                </el-input>
+                <!-- 添加按钮 -->
+                <el-button
+                  v-else
+                  class="button-new-tag"
+                  size="small"
+                  @click="showInput(scope.row)"
+                  >+ New Tag</el-button
+                >
+              </template>
+            </el-table-column>
             <!-- 索引列 -->
             <el-table-column type="index"> </el-table-column>
             <el-table-column label="参数名称" prop="attr_name">
@@ -67,7 +98,7 @@
                   type="primary"
                   icon="el-icon-delete"
                   size="mini"
-                  @click="removeParams"
+                  @click="removeParams(scope.row.attr_id)"
                 >
                   删除
                 </el-button>
@@ -89,7 +120,38 @@
           <!-- 静态参数表格 -->
           <el-table :data="onlylist" border stripe>
             <!-- 展开小箭头 -->
-            <el-table-column type="expand"> </el-table-column>
+            <el-table-column type="expand">
+              <template v-slot="scope">
+                <el-tag
+                  v-for="(item, i) in scope.row.attr_vals"
+                  :key="i"
+                  closable
+                  @close="tagClose(i, scope.row)"
+                >
+                  {{ item }}
+                </el-tag>
+                <!-- 结尾添加区 -->
+                <!-- 输入的文本框 -->
+                <el-input
+                  class="input-new-tag"
+                  v-if="scope.row.inputVisible"
+                  v-model="scope.row.inputValue"
+                  ref="saveTagInput"
+                  size="small"
+                  @keyup.enter.native="handleInputConfirm(scope.row)"
+                  @blur="handleInputConfirm(scope.row)"
+                >
+                </el-input>
+                <!-- 添加按钮 -->
+                <el-button
+                  v-else
+                  class="button-new-tag"
+                  size="small"
+                  @click="showInput(scope.row)"
+                  >+ New Tag</el-button
+                >
+              </template>
+            </el-table-column>
             <!-- 索引列 -->
             <el-table-column type="index"> </el-table-column>
             <el-table-column label="属性名称" prop="attr_name">
@@ -108,7 +170,7 @@
                   type="primary"
                   icon="el-icon-delete"
                   size="mini"
-                  @click="removeParams"
+                  @click="removeParams(scope.row.attr_id)"
                 >
                   删除
                 </el-button>
@@ -213,6 +275,10 @@ export default {
           { required: true, message: "输入添加参数名称", trigger: "blur" },
         ],
       },
+      //输入框与button互切
+      inputVisible: false,
+      //input双向绑定
+      inputValue: "",
     };
   },
   created() {
@@ -233,6 +299,8 @@ export default {
       //ui中：@change	当选中节点变化时触发	选中节点的值(id)
       if (this.selectcateList.length != 3) {
         this.selectcateList = [];
+        this.manylist = [];
+        this.onlylist;
         return;
       } else {
         const { data: res } = await this.$http.get(
@@ -244,6 +312,13 @@ export default {
         if (res.meta.status !== 200) {
           return this.$message.error("获取参数列表失败");
         }
+        // console.log(res.data);
+        res.data.forEach((i) => {
+          i.attr_vals = i.attr_vals ? i.attr_vals.split(",") : [];
+          //让遍历出来的每一行数据都有自己的布尔值和数据
+          i.inputVisible = false;
+          i.inputValue = "";
+        });
         // console.log(res.data);
         if (this.activeName == "many") {
           this.manylist = res.data;
@@ -279,7 +354,7 @@ export default {
             attr_sel: this.activeName,
           }
         );
-        console.log(res);
+        // console.log(res);
         if (res.meta.status !== 201) {
           return this.$message.error("添加参数失败");
         }
@@ -323,7 +398,7 @@ export default {
               attr_sel: this.activeName,
             }
           );
-          console.log(res);
+          // console.log(res);
           if (res.meta.status !== 200) {
             return this.$message.error("修改参数列表失败");
           }
@@ -334,7 +409,72 @@ export default {
         }
       });
     },
-    removeParams() {},
+    removeParams(id) {
+      this.$confirm("此操作将永久删除该参数, 是否继续?", "提示", {
+        confirmButtonText: "确定",
+        cancelButtonText: "取消",
+        type: "warning",
+      })
+        .then(() => {
+          this.$message({
+            type: "success",
+            message: "删除成功!",
+          });
+          this.$http.delete(
+            `categories/${this.selectcateList[2]}/attributes/${id}`
+          );
+          this.getshoplist();
+          this.selectedchange();
+        })
+        .catch(() => {
+          this.$message({
+            type: "info",
+            message: "已取消删除",
+          });
+        });
+    },
+    //input数去焦点或按下enter触发
+    async handleInputConfirm(r) {
+      //消除空格后文本长度依然为0 则走下列代码
+      if (r.inputValue.trim().length == 0) {
+        r.inputValue = "";
+        r.inputVisible = false;
+        return;
+      }
+      //否则 输入合法 走下面代码
+      r.attr_vals.push(r.inputValue);
+      r.inputValue = "";
+      r.inputVisible = false;
+      this.putdata(r);
+    },
+    //tag参数提交函数提交与删除时都会调用该函数
+    async putdata(r) {
+      const { data: res } = await this.$http.put(
+        `categories/${
+          this.selectcateList[this.selectcateList.length - 1]
+        }/attributes/${r.attr_id}`,
+        {
+          attr_name: r.attr_name,
+          attr_sel: r.attr_sel,
+          attr_vals: r.attr_vals.join(","),
+        }
+      );
+      if (res.meta.status !== 200) {
+        return this.$message.error("编辑提交参数失败");
+      }
+      this.$message.success("编辑成功");
+    },
+    showInput(r) {
+      r.inputVisible = true;
+      this.$nextTick((_) => {
+        this.$refs.saveTagInput.$refs.input.focus();
+      });
+    },
+    //删除tag
+    tagClose(i, r) {
+      r.attr_vals.splice(i, 1);
+      this.putdata(r);
+    },
   },
   computed: {
     isbtnDisbled() {
@@ -347,4 +487,8 @@ export default {
 };
 </script>
 
-<style scoped lang="less"></style>
+<style scoped lang="less">
+.input-new-tag {
+  width: 130px;
+}
+</style>
