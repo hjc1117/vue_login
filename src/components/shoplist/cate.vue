@@ -336,7 +336,7 @@ export default {
       const { data: res } = await this.$http.delete(
         `categories/${scope_.cat_id}`
       );
-      console.log(scope_.cat_id);
+      // console.log(scope_.cat_id);
       if (res.meta.status !== 200) {
         return this.$message.error("删除失败");
       }

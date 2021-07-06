@@ -9,6 +9,8 @@ import Rights from '../components/power/rights.vue'
 import Juese from '../components/power/juese.vue'
 import Cate from '../components/shoplist/cate.vue'
 import Params from '../components/shoplist/params.vue'
+import Goods from '../components/shoplist/shoplist.vue'
+import Add from '../components/shoplist/add.vue'
 Vue.use(VueRouter)
 const routes = [{
     // 注册
@@ -28,6 +30,8 @@ const routes = [{
         { path: "/roles", component: Juese },
         { path: "/categories", component: Cate },
         { path: "/params", component: Params },
+        { path: "/goods", component: Goods },
+        { path: "/goods/addlist", component: Add },
     ]
 }, ]
 

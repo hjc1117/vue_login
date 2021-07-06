@@ -26,3 +26,7 @@ body,
     height: 400px !important;
     overflow: scroll;
 }
+
+.ql-editor {
+    min-height: 300px;
+}
