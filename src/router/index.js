@@ -12,6 +12,7 @@ import Params from '../components/shoplist/params.vue'
 import Goods from '../components/shoplist/shoplist.vue'
 import Add from '../components/shoplist/add.vue'
 import Order from '../components/order/order.vue'
+import Report from '../components/reprot/report.vue'
 Vue.use(VueRouter)
 const routes = [{
     // 注册
@@ -34,6 +35,7 @@ const routes = [{
         { path: "/goods", component: Goods },
         { path: "/goods/addlist", component: Add },
         { path: "/orders", component: Order },
+        { path: "/reports", component: Report },
     ]
 }, ]
 
