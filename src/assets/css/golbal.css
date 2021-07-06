@@ -23,7 +23,7 @@ body,
 
 .el-popper,
 .el-cascader__dropdown {
-    height: 400px !important;
+    height: 500px !important;
     overflow: scroll;
 }
 
